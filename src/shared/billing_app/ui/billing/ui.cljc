@@ -361,7 +361,7 @@
   (dom/li (str "Invoice part " number " for account " accid ": period "
                (str/join " - "(map ui-format period)))))
 
-(def ui-invoice-part (comp/factory InvoicePartDetails))
+(def ui-invoice-part (comp/factory InvoicePartDetails {:keyfn :invoice-part/synt-id}))
 
 (defsc Invoice
   "Show details of the latest invoice of an org."

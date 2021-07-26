@@ -79,6 +79,7 @@
 
 (comment
 
+  (dev/evict-all-for #'find-invoice-parts-too-long)
   (dev/evict-all-for #'billing-period+invoice-batches-with-leasing-cacheable)
   (dev/evict-all-for #'employee-batches)
 

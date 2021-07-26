@@ -9,7 +9,7 @@
                                                                           "dataSourceClassName" "org.h2.jdbcx.JdbcDataSource"
                                                                           "dataSource.user"     "sa"
                                                                           "dataSource.password" :env/DB_PSW
-                                                                          "dataSource.URL"      "jdbc:h2:mem:dev-db2"}
+                                                                          "dataSource.URL"      "jdbc:h2:mem:dev-db2;DB_CLOSE_DELAY=-1"}
                                                :sql/vendor               :h2
                                                :sql/auto-create-missing? true
                                                :sql/schema               :billing}}
