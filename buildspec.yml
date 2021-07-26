@@ -1,0 +1,64 @@
+# Build description for AWS Code Build
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: "eu-west-1" # Should come from the environment but doesn't?!
+    IMAGE_REPO_NAME: "billing-app"
+    IMAGE_TAG: latest
+    # NOTE: `CODEBUILD_RESOLVED_SOURCE_VERSION`, `AWS_ACCOUNT_ID`, `ContainerName` comes from the environment
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk11
+      docker: 18
+      nodejs: 10
+    commands:
+      - |
+        if ! which clojure; then
+            wget https://raw.githubusercontent.com/borkdude/deps.clj/master/install -O /root/install_deps_exe
+            chmod u+x /root/install_deps_exe
+            /root/install_deps_exe
+            mv /usr/local/bin/deps /usr/local/bin/clojure
+        fi
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - echo "NPM install..."
+      - npm config -g set prefer-offline true
+      - npm config -g set cache /root/.npm
+      - npm ci # requires package-lock.json; faster ^ repeatable
+  build:
+    commands:
+      - echo "=== Building... ==="
+      # NOTE: Current pwd = $CODEBUILD_SRC_DIR
+      - export GIT_SHA="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      - export IMAGE_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$GIT_SHA"
+      - echo Build started on `date` in `pwd` by the Linux user `whoami` ver $GIT_SHA
+      - ./build.sh
+      - echo Building the Docker image...
+      - docker build --build-arg arg_git_sha=$GIT_SHA -t $IMAGE_REPO_NAME:$IMAGE_TAG -f Dockerfile target/docker
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$GIT_SHA
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo "Pushing the Docker image $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG and :$GIT_SHA ..."
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker push $IMAGE_URI
+      - echo "Generating imagedefinitions.json for CodeDeploy in $(pwd)..."
+      - printf '[{"name":"%s","imageUri":"%s"}]' "$ContainerName" "$IMAGE_URI" > imagedefinitions.json
+
+cache:
+  paths:
+     - /root/.deps.clj/
+     - /root/.npm/**/*
+     - /root/.m2/**/*
+     - /usr/local/bin/clojure
+
+artifacts:
+  files:
+    - imagedefinitions.json
+  discard-paths: yes

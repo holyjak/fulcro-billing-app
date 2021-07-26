@@ -1,0 +1,67 @@
+{:repl {:port 55555}
+ ;; Internal config stuff:
+ :org.immutant.web/config         {:port :env.edn/PORT
+                                   :host "0.0.0.0"}
+ :ring.middleware/defaults-config {:params    {:keywordize true
+                                               :multipart  true
+                                               :nested     true
+                                               :urlencoded true}
+                                   :cookies   true
+                                   :responses {:absolute-redirects     true
+                                               :content-types          true
+                                               :default-charset        "utf-8"
+                                               :not-modified-responses true}
+                                   :session   true
+                                   :static    {:resources "public"}
+                                   :security  {;:anti-forgery   true ; Breaks the app after new deploys, disable until a solution
+                                               :hsts           true
+                                               :ssl-redirect   false
+                                               :frame-options  :sameorigin
+                                               :xss-protection {:enable? true
+                                                                :mode    :block}}}
+ :taoensso.timbre/logging-config    {:min-level  :info
+                                     :ns-filter {:allow #{"com.fulcrologic.*" "billing-app.*"}
+                                                 :deny #{"com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool"
+                                                         "com.mchange.v2.c3p0.stmt.GooGooStatementCache"
+                                                         "com.mchange.v2.resourcepool.BasicResourcePool"
+                                                         "com.zaxxer.hikari.pool.HikariPool"
+                                                         "com.zaxxer.*"
+                                                         "com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource"
+                                                         "com.mchange.v2.c3p0.impl.NewPooledConnection"
+                                                         "datomic.common"
+                                                         "datomic.connector"
+                                                         "datomic.coordination"
+                                                         "datomic.db"
+                                                         "datomic.index"
+                                                         "datomic.kv-cluster"
+                                                         "datomic.log"
+                                                         "datomic.peer"
+                                                         "datomic.process-monitor"
+                                                         "datomic.reconnector2"
+                                                         "datomic.slf4j"
+                                                         "org.flywaydb.*"
+                                                         "io.netty.buffer.PoolThreadCache"
+                                                         "org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+                                                         "org.projectodd.wunderboss.web.Web"
+                                                         "org.quartz.core.JobRunShell"
+                                                         "org.quartz.core.QuartzScheduler"
+                                                         "org.quartz.core.QuartzSchedulerThread"
+                                                         "org.quartz.impl.StdSchedulerFactory"
+                                                         "org.quartz.impl.jdbcjobstore.JobStoreTX"
+                                                         "org.quartz.impl.jdbcjobstore.SimpleSemaphore"
+                                                         "org.quartz.impl.jdbcjobstore.StdRowLockSemaphore"
+                                                         "org.quartz.plugins.history.LoggingJobHistoryPlugin"
+                                                         "org.quartz.plugins.history.LoggingTriggerHistoryPlugin"
+                                                         "org.quartz.utils.UpdateChecker"
+                                                         "shadow.cljs.devtools.server.worker.impl"
+
+                                                         "clojure.core"
+                                                         "clojure.core.*"
+                                                         "ring.middleware.*"
+                                                         "io.undertow.*"
+                                                         "immutant.*"
+                                                         "com.wsscode.pathom.core.*"
+                                                         "org.eclipse.*"
+                                                         "org.apache.http.*"}}
+                                     ;; Disable colors in stacktraces in prod:
+                                     :fulcro/output-fn-opts {:stacktrace-fonts {}}}}

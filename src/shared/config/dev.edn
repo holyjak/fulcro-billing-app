@@ -1,0 +1,4 @@
+{;; In dev use `bypass-authorization? true` or, if you want to test auth checks, `allow-fake-authorization? true`
+ :dev/bypass-authorization? true :dev/allow-fake-authorization? false
+ :com.example.components.parser/config {:trace? true
+                                        :log-unknown-keys? true}}

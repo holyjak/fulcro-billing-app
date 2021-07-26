@@ -1,0 +1,46 @@
+{:deps     {:aliases [:dev :test :sql #_:rad-dev]}
+ :nrepl    {:port 9002}
+ :jvm-opts ["-Xmx2G"]
+ :builds   {:main     {:target     :browser
+                       :output-dir "resources/public/js/main"
+                       :asset-path "/js/main"
+                       :dev        {:compiler-options {:external-config {:guardrails {:emit-spec? true :throw? false}}}}
+                       :release    {:compiler-options {:source-map true}}
+                       :modules    {:main {:init-fn billing-app.client/init}}
+                       ;; Preact not quite working for some reason, even though simple Fulcro demos do work
+                       :js-options {:resolve
+                                    {
+                                     ;; playing with preact
+                                     ;; "react"     {:target  :npm :require "preact/compat"}
+                                     ;; "react-dom" {:target  :npm :require "preact/compat"}
+
+                                     ;; Make js-joda-timezone a reasonable build size
+                                     "js-joda-timezone"
+                                     {:target  :npm
+                                      :require "js-joda-timezone/dist/js-joda-timezone-10-year-range.min.js"}}}
+                       :devtools   {:preloads   [shadow.remote.runtime.cljs.browser ; Shadow Inspect tab support
+                                                 com.fulcrologic.fulcro.inspect.preload
+                                                 com.fulcrologic.fulcro.inspect.dom-picker-preload
+                                                 holyjak.fulcro-troubleshooting]
+                                    :after-load billing-app.client/refresh}}
+
+            :test     {:target           :browser-test
+                       :test-dir         "resources/public/js/test"
+                       :ns-regexp        "-spec$"
+                       :compiler-options {:static-fns      false
+                                          :external-config {:guardrails {:throw? true :emit-spec? true}}}
+                       :js-options       {:resolve {"react-dom" {:target  :npm
+                                                                 :require "react-dom/cjs/react-dom.production.min.js"}
+                                                    "react"     {:target  :npm
+                                                                 :require "react/cjs/react.production.min.js"}}}
+                       :devtools         {:http-port          8081
+                                          :http-resource-root "public"
+                                          :http-root          "resources/public/js/test"}}
+
+            :ci-tests {:target           :karma
+                       :js-options       {:js-provider :shadow}
+                       :compiler-options {:static-fns      false ; required for mocking to work
+                                          :external-config {:guardrails {:throw? true :emit-spec? true}}}
+                       :output-to        "target/ci.js"
+                       :ns-regexp        "-spec$"}}}
+
