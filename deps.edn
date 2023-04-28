@@ -42,8 +42,7 @@
     org.clojure/tools.namespace {:mvn/version "1.0.0"},
     holyjak/fulcro-troubleshooting
     {:git/url "https://github.com/holyjak/fulcro-troubleshooting",
-     :sha "943e632d076d83d70f828887b079a53ea06bb83d",
-     :tag "latest"},
+     :sha "943e632d076d83d70f828887b079a53ea06bb83d"},
     vlaaad/reveal {:mvn/version "1.3.196"}},
    :repl-options {:nrepl-middleware [vlaaad.reveal.nrepl/middleware]}},
   :shadow-cli
